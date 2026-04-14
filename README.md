@@ -3,7 +3,7 @@
 Este projeto foi desenvolvido como parte do meu MBA em Data Science & AI. Ele representa a intersecção entre a minha base em **Design Visual** e o meu desenvolvimento em **Ciência de Dados**, unindo uma interface limpa e funcional a um processo rigoroso de tratamento de dados. O objetivo é oferecer uma interface interativa para explorar um conjunto de dados de anúncios de vendas de carros nos EUA, identificando padrões de preços e quilometragem.
 
 ## 🚀 Link do Aplicativo
-[Acesse o Dashboard Online aqui][(https://project-4-vehicle-us.onrender.com)]
+[Acesse o Dashboard Online aqui](https://project-4-vehicle-us.onrender.com)
 
 ## ![Screenshot do App](./screenshot.png)
 
