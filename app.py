@@ -8,7 +8,7 @@ st.set_page_config(page_title="Análise de Veículos", layout="wide")
 st.header('Dashboard Interativo: Análise de Inventário de Veículos')
 
 # Lendo os dados
-car_data = pd.read_csv('vehicles_us.csv')
+car_data = pd.read_csv('vehicles.csv')
 
 # --- BARRA LATERAL (FILTROS) ---
 st.sidebar.header("Filtros de Visualização")
