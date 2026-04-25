@@ -1,46 +1,56 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 
-# --- CONFIGURAÇÃO E LIMPEZA ---
-# Lembre-se de verificar se o nome do arquivo é 'vehicles.csv' ou 'vehicles_us.csv'
-car_data = pd.read_csv('vehicles.csv')
+# Configuração da página (opcional, mas melhora o visual)
+st.set_page_config(page_title="Análise de Veículos", layout="wide")
 
-# Limpeza dos dados (essencial para os gráficos não quebrarem)
-car_data['is_4wd'] = car_data['is_4wd'].fillna(0).astype(int)
-car_data['paint_color'] = car_data['paint_color'].fillna('unknown')
-car_data['model_year'] = car_data['model_year'].fillna(
-    car_data['model_year'].median()).astype(int)
-car_data['cylinders'] = car_data['cylinders'].fillna(
-    car_data['cylinders'].median()).astype(int)
-car_data['odometer'] = car_data['odometer'].fillna(
-    car_data['odometer'].median())
+st.header('Dashboard Interativo: Análise de Inventário de Veículos')
 
-# --- INTERFACE DO USUÁRIO ---
-st.title('Dashboard de Análise: Venda de Veículos nos EUA')
-st.write('Explore as tendências de mercado e preços de carros usados de forma interativa.')
-st.divider()
+# Lendo os dados
+car_data = pd.read_csv('vehicles_us.csv')
 
-st.header('Exploração de Dados')
+# --- BARRA LATERAL (FILTROS) ---
+st.sidebar.header("Filtros de Visualização")
 
-# Criando botões para disparar os gráficos
-hist_button = st.button('Criar histograma de quilometragem')
+# Filtro 1: Seleção de Fabricante (ou Modelo)
+# Criamos uma lista de opções únicas para o usuário escolher
+model_list = sorted(car_data['model'].unique())
+selected_model = st.sidebar.multiselect('Selecione os modelos:', model_list, default=model_list[:5])
 
-# --- SEÇÃO 1: USANDO BOTÕES ---
-# Lógica do Histograma
-if hist_button:
-    st.write(
-        'Criando um histograma para o conjunto de dados de anúncios de vendas de carros')
-    fig_hist = px.histogram(car_data, x="odometer",
-                            title="Distribuição de Odômetros")
-    st.plotly_chart(fig_hist, use_container_width=True)
+# Filtro 2: Range de Preço
+min_price, max_price = int(car_data['price'].min()), int(car_data['price'].max())
+price_range = st.sidebar.slider("Faixa de Preço", min_price, max_price, (min_price, max_price))
 
-# --- SEÇÃO 2: USANDO CAIXA DE SELEÇÃO ---
-st.header('Visualizações Fixas')
-st.write('Marque a caixa para manter o gráfico de dispersão visível para análise.')
-show_scatter = st.checkbox('Exibir Gráfico de Dispersão (Odômetro vs Preço)')
+# --- FILTRAGEM DOS DADOS ---
+# Aplicamos as escolhas do usuário ao DataFrame original
+df_filtered = car_data[
+    (car_data['model'].isin(selected_model)) & 
+    (car_data['price'].between(price_range[0], price_range[1]))
+]
 
-if show_scatter:
-    fig_scatter = px.scatter(car_data, x="odometer",
-                             y="price", title="Relação: Odômetro vs Preço")
-    st.plotly_chart(fig_scatter, use_container_width=True)
+# --- ÁREA DE GRÁFICOS ---
+st.subheader('Exploração Visual')
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.write("### Distribuição por Ano")
+    show_hist = st.checkbox('Exibir Histograma de Anos', value=True)
+    if show_hist:
+        fig_hist = px.histogram(df_filtered, x="model_year", color="condition",
+                                title="Frequência por Ano e Condição")
+        st.plotly_chart(fig_hist, use_container_width=True)
+
+with col2:
+    st.write("### Relação Preço vs Odômetro")
+    show_scatter = st.checkbox('Exibir Gráfico de Dispersão', value=True)
+    if show_scatter:
+        fig_scatter = px.scatter(df_filtered, x="odometer", y="price", 
+                                 color="type", hover_data=['model'],
+                                 title="Preço por Quilometragem")
+        st.plotly_chart(fig_scatter, use_container_width=True)
+
+# Exibição da tabela de dados filtrados para conferência
+if st.checkbox('Mostrar tabela de dados filtrados'):
+    st.dataframe(df_filtered)
